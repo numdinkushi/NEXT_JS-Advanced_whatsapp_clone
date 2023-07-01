@@ -28,17 +28,19 @@ function Main() {
 		if(!data.status){
 			router.push("/login");
 		}
-		const {
-			id,
-			name,
-			email,
-			profilePicture: profileImage,
-			status,
-		} = data.data;
-		dispatch({
-			type: reducerCases.SET_USER_INFO,
-			userInfo: { id, name, email, profileImage, status },
-		});
+		if(data?.data){
+			const {
+				id,
+				name,
+				email,
+				profilePicture: profileImage,
+				status,
+			} = data.data;
+			dispatch({
+				type: reducerCases.SET_USER_INFO,
+				userInfo: { id, name, email, profileImage, status },
+			});
+		}
 	}
 	
 	})
