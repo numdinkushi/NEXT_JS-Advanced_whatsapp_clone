@@ -12,7 +12,7 @@ import Chat from "./Chat/Chat";
 
 function Main() {
 	const router = useRouter();
-	const [{ userInfo }, dispatch] = useStateProvider();
+	const [{ userInfo, currentChatUser }, dispatch] = useStateProvider();
 
 	const [redirectLogin, setRedirectLogin] = useState(false);
 
@@ -25,7 +25,6 @@ function Main() {
 		if(!userInfo && currentUser?.email){
 		const {data} = await axios.post(CHECK_USER_ROUTE, {email:currentUser.email})
 		
-		console.log(222, data);
 		if(!data.status){
 			router.push("/login");
 		}
@@ -49,8 +48,9 @@ function Main() {
 		<>
 			<div className="grid grid-cols-main h-screen max-h-screen max-w-full overflow-hidden">
 				<ChatList />
-				<Chat />
-				{/* <Empty /> */}
+				{
+					currentChatUser ? <Chat /> : <Empty />
+				}
 			</div>
 		</>
 	);
