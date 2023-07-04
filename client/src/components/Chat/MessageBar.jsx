@@ -2,7 +2,8 @@ import { useStateProvider } from "@/context/StateContext";
 import { reducerCases } from "@/context/constants";
 import { ADD_MESSAGES } from "@/utils/ApiRoutes";
 import axios from "axios";
-import React, { useState } from "react";
+import EmojiPicker from "emoji-picker-react";
+import React, { useEffect, useRef, useState } from "react";
 import { BsEmojiSmile } from "react-icons/bs";
 import { FaMicrophone } from "react-icons/fa";
 import { ImAttachment } from "react-icons/im";
@@ -10,8 +11,36 @@ import { MdSend } from "react-icons/md";
 
 function MessageBar() {
 	const [message, setMessage] = useState("");
+	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+	const emojiPickerRef = useRef(null);
 
 	const [{ userInfo, currentChatUser, socket }, dispatch] = useStateProvider();
+
+	const handleEmojiClick = (emoji) => {
+		setMessage((previousMessage) => (previousMessage += emoji.emoji));
+	};
+
+	const handleEmojiModal = () => {
+		setShowEmojiPicker(!showEmojiPicker);
+	};
+
+	useEffect(() => {
+		const handleOutsideEmoji = (event) => {
+			if (event.target.id !== "emoji-open") {
+				if (
+					emojiPickerRef.current &&
+					!emojiPickerRef.current.contains(event.target)
+				) {
+					setShowEmojiPicker(false);
+				}
+			}
+		};
+		document.addEventListener("click", handleOutsideEmoji);
+
+		return () => {
+			document.removeEventListener("click", handleOutsideEmoji);
+		};
+	}, []);
 
 	const sendMessage = async () => {
 		try {
@@ -25,24 +54,36 @@ function MessageBar() {
 				from: userInfo?.id,
 				message: data.message,
 			});
-			dispatch({type: reducerCases.ADD_MESSAGE, newMessage: {
-				...data.message
-			},
-			fromSelf: true 
-		})
+			dispatch({
+				type: reducerCases.ADD_MESSAGE,
+				newMessage: {
+					...data.message,
+				},
+				fromSelf: true,
+			});
 			setMessage("");
 		} catch (error) {
-			console.log(error)
+			console.log(error);
 		}
 	};
 	return (
 		<div className="bg-panel-header-background h-20 px-4 flex items-center flex-center gap-6 relative">
 			<>
-				<div className="flex gap-6">
+				<div className="flex gap-6" >
 					<BsEmojiSmile
 						className="text-panel-header-icon cursor-pointer text-xl"
 						title="Emoji"
+						id="emoji-open"
+						onClick={handleEmojiModal}
 					/>
+					{showEmojiPicker && (
+						<div ref={emojiPickerRef} className="absolute bottom-24 left-16 z-40">
+							<EmojiPicker
+								onEmojiClick={(emoji) => handleEmojiClick(emoji)}
+								theme="dark"
+							/>
+						</div>
+					)}
 					<ImAttachment
 						className="text-panel-header-icon cursor-pointer text-xl"
 						title="Attach File"
