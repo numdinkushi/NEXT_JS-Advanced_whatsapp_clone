@@ -26,25 +26,43 @@ export const addMessage = async (req, res, next) => {
 export const getMessages = async (req, res, next) => {
 	try {
 		const prisma = getPrismaInstance();
-		const { from, to } = req.params;
+		const {from, to} = req.params;
 
-		const messages = await prisma.findMany({
+		// console.log(await prisma.Messages)
+		const messages = await prisma.Messages.findMany({
 			where: {
 				OR: [
-					{ senderId: parseInt(from), receiver: parseInt(to) },
-					{ senderId: parseInt(to), receiver: parseInt(from) },
-				],
+					{
+						senderId: parseInt(from),
+						receiverId: parseInt(to),
+					},
+					{
+						senderId: parseInt(to),
+						receiverId: parseInt(from),
+					}
+				]
 			},
-            orderBy: {id: "asc"}
+			orderBy: {id: "asc"}
+		});
+		const unreadMessages = [];
+		messages.forEach((message, index) => {
+			if (
+				message?.messageStatus !== "read" &&
+				message.senderId === parseInt(to)
+			) {
+				messages[index].messageStatus = "read";
+				unreadMessages.push(message.id);
+			}
 		});
 
-        const unReadMessages = [];
-        messages.forEach((message, index) => {
-            if(message?.messageStatus !== "read" && message.senderId === parseInt(to)){
-                messages[index].messageStatus = "read";
-                
-            }
-        });
+		await prisma.Messages.updateMany({
+			where: {
+				id: { in: unreadMessages },
+			},
+			data: { messageStatus: "read" },
+		});
+
+        res.status(200).json({messages})
 	} catch (error) {
 		next(error);
 	}
