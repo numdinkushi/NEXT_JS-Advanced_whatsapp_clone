@@ -15,9 +15,36 @@ export const addMessage = async (req, res, next) => {
 				},
 				include: { sender: true, receiver: true },
 			});
-            return res.status(201).send({message: newMessage});
+			return res.status(201).send({ message: newMessage });
 		}
-        return res.status(400).send("from, to and message is required")
+		return res.status(400).send("from, to and message is required");
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const getMessages = async (req, res, next) => {
+	try {
+		const prisma = getPrismaInstance();
+		const { from, to } = req.params;
+
+		const messages = await prisma.findMany({
+			where: {
+				OR: [
+					{ senderId: parseInt(from), receiver: parseInt(to) },
+					{ senderId: parseInt(to), receiver: parseInt(from) },
+				],
+			},
+            orderBy: {id: "asc"}
+		});
+
+        const unReadMessages = [];
+        messages.forEach((message, index) => {
+            if(message?.messageStatus !== "read" && message.senderId === parseInt(to)){
+                messages[index].messageStatus = "read";
+                
+            }
+        });
 	} catch (error) {
 		next(error);
 	}
