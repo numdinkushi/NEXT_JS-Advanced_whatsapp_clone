@@ -1,4 +1,5 @@
 import { useStateProvider } from "@/context/StateContext";
+import { reducerCases } from "@/context/constants";
 import { ADD_MESSAGES } from "@/utils/ApiRoutes";
 import axios from "axios";
 import React, { useState } from "react";
@@ -24,6 +25,11 @@ function MessageBar() {
 				from: userInfo?.id,
 				message: data.message,
 			});
+			dispatch({type: reducerCases.ADD_MESSAGE, newMessage: {
+				...data.message
+			},
+			fromSelf: true 
+		})
 			setMessage("");
 		} catch (error) {
 			console.log(error)
