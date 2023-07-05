@@ -47,7 +47,6 @@ export const getAllUsers = async (req, res, next) => {
 				about: true,
 			},
 		});
-		console.log(users)
 		const usersGroupedByInitialLetter = {};
 		users.forEach(user => {
 			const initialLetter = user.name.charAt(0).toUpperCase();
