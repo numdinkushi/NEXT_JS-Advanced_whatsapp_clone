@@ -140,7 +140,37 @@ function CaptureAudio({ hide }) {
 		setIsPlaying(false);
 	};
 
-	const sendRecording = async () => {};
+	const sendRecording = async () => {
+    try {
+			const formData = new FormData();
+			formData.append("audio", renderedAudio);
+			const response = await axios.post(ADD_IMAGE_MESSAGE_ROUTE, formData, {
+				headers: {
+					"Content-Type": "multipart/form-data",
+				},
+				params: {
+					from: userInfo?.id,
+					to: currentChatUser?.id,
+				},
+			});
+			if (response.status === 201) {
+				socket.current.emit("send-msg", {
+					to: currentChatUser?.id,
+					from: userInfo?.id,
+					message: response?.data.message,
+				});
+				dispatch({
+					type: reducerCases.ADD_MESSAGE,
+					newMessage: {
+						...response.data.message,
+					},
+					fromSelf: true,
+				});
+			}
+		} catch (error) {
+			console.log(error);
+		}
+  };
 
 	const formatTime = (time) => {
     console.log(time)
