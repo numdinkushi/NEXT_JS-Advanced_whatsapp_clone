@@ -8,7 +8,7 @@ import {
 	FaTrash,
 } from "react-icons/fa";
 import { MdSend } from "react-icons/md";
-import {wavesurfer} from "wavesurfer.js";
+import Wavesurfer from "wavesurfer.js";
 
 function CaptureAudio({ hide }) {
 	const [{ userInfo, currentChatUser, socket }] = useStateProvider();
@@ -27,22 +27,23 @@ function CaptureAudio({ hide }) {
 	const waveformRef = useRef(null);
 
 	useEffect(() => {
-		const waveSurfer = wavesurfer.create({
-		  container: waveformRef.current,
-		  waveColor: "#ccc",
-		  progressColor: "#4ae9ff",
-		  cursorColor: "#7ae3c3",
-		  barWidth: 2,
-		  height: 30,
-		  responsive: true
-		})
-		  setWaveform(waveSurfer);
-		  waveSurfer.on("finish", ()=>{
-		    setIsPlaying(false);
-		  });
-		  return () => {
-		    waveSurfer.destroy();
-		  }
+		const waveSurfer = Wavesurfer?.create({
+			container: waveformRef.current,
+			waveColor: "#ccc",
+			progressColor: "#4ae9ff",
+			cursorColor: "#7ae3c3",
+			barWidth: 2,
+			height: 30,
+			responsive: true,
+		});
+
+		setWaveform(waveSurfer);
+		waveSurfer?.on("finish", () => {
+			setIsPlaying(false);
+		});
+		return () => {
+			waveSurfer?.destroy();
+		};
 	}, []);
 
 	useEffect(() => {
@@ -61,7 +62,7 @@ function CaptureAudio({ hide }) {
 		if (waveform) {
 			handleStartRecording();
 		}
-	}, []);
+	}, [waveform]);
 
 	const handleStartRecording = () => {
 		setRecordingDuration(0);
@@ -84,7 +85,7 @@ function CaptureAudio({ hide }) {
 					const audio = new Audio(audioURL);
 					setRecordedAudio(audio);
 
-					waveform.load(audioURL);
+					waveform?.load(audioURL);
 				};
 				mediaRecorder.start();
 			})
@@ -97,53 +98,52 @@ function CaptureAudio({ hide }) {
 		if (mediaRecorderRef.current && isRecording) {
 			mediaRecorderRef.current.stop();
 			setIsRecording(false);
-			waveform.stop();
+			waveform?.stop();
 
 			const audioChunks = [];
 			mediaRecorderRef.current.addEventListener("dataavailable", (event) => {
 				audioChunks.push(event.data);
 			});
 
-      mediaRecorderRef.current.addEventListener("stop", ()=>{
-        const audioBlob = new Blob(audioChunks, {type: "audio/mp3"})
-        const audioFile = new File([audioBlob], "recording.mp3")
-        setRenderedAudio(audioFile);
-      })
+			mediaRecorderRef.current.addEventListener("stop", () => {
+				const audioBlob = new Blob(audioChunks, { type: "audio/mp3" });
+				const audioFile = new File([audioBlob], "recording.mp3");
+				setRenderedAudio(audioFile);
+			});
 		}
 	};
 
-  useEffect(() => {
-   if(recordedAudio){
-    const updatePlaybackTime = () => {
-      setCurrentPlayBackTime(recordedAudio.currentTime);
-      
-      return () => {
-        recordedAudio.removeEventListener("timeupdate", updatePlaybackTime);
-      }
-    }
-   }
-  }, [])
-  
+	useEffect(() => {
+		if (recordedAudio) {
+			const updatePlaybackTime = () => {
+				setCurrentPlayBackTime(recordedAudio.currentTime);
+			};
+			recordedAudio.addEventListener("timeupdate", updatePlaybackTime);
+			return () => {
+				recordedAudio.removeEventListener("timeupdate", updatePlaybackTime);
+			};
+		}
+	}, [recordedAudio]);
+
 	const handlePlayRecording = () => {
-    if(recordedAudio){
-      waveform.stop();
-      waveform.play();
-      recordedAudio.play();
-      setIsPlaying(true);
-    }
-  };
+		if (recordedAudio) {
+			waveform?.stop();
+			waveform?.play();
+			recordedAudio.play();
+			setIsPlaying(true);
+		}
+	};
 
 	const handlePauseRecording = () => {
-    waveform.stop();
-    recordedAudio.pause();
-    setIsPlaying(false);
-  };
+		waveform?.stop();
+		recordedAudio.pause();
+		setIsPlaying(false);
+	};
 
-	const sendRecording = async () => {
-
-  };
+	const sendRecording = async () => {};
 
 	const formatTime = (time) => {
+    console.log(time)
 		if (isNaN(time)) return "0:00";
 		const minutes = Math.floor(time / 60);
 		const seconds = Math.floor(time % 60);
@@ -185,26 +185,27 @@ function CaptureAudio({ hide }) {
 					<span>{formatTime(totalDuration)}</span>
 				)}
 				<audio src="" ref={audioRef} hidden />
-				<div className="mr-4">
-					{!isRecording ? (
-						<FaMicrophone
-							className="text-red-500"
-							onClick={handleStartRecording}
-						/>
-					) : (
-						<FaPauseCircle
-							className="text-red-500"
-							onClick={handleStopRecording}
-						/>
-					)}
-				</div>
-				<div>
-					<MdSend
-						className="text-panel-header-icon cursor-pointer mr-4"
-						title="send"
-						onClick={sendRecording}
+			</div>
+
+			<div className="mr-4">
+				{!isRecording ? (
+					<FaMicrophone
+						className="text-red-500"
+						onClick={handleStartRecording}
 					/>
-				</div>
+				) : (
+					<FaPauseCircle
+						className="text-red-500"
+						onClick={handleStopRecording}
+					/>
+				)}
+			</div>
+			<div>
+				<MdSend
+					className="text-panel-header-icon cursor-pointer mr-4"
+					title="send"
+					onClick={sendRecording}
+				/>
 			</div>
 		</div>
 	);
