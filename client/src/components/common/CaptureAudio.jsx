@@ -20,7 +20,7 @@ function CaptureAudio({ hide }) {
 	const [recordingDuration, setRecordingDuration] = useState(0);
 	const [currentPlayBackTime, setCurrentPlayBackTime] = useState(0);
 	const [totalDuration, setTotalDuration] = useState(0);
-	const [isPlaying, setIsPlaying] = useState(0);
+	const [isPlaying, setIsPlaying] = useState(false);
 
 	const audioRef = useRef(null);
 	const mediaRecorderRef = useRef(null);
