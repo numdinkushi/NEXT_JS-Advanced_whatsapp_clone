@@ -177,7 +177,7 @@ function CaptureAudio({ hide }) {
   };
 
 	const formatTime = (time) => {
-    console.log(time)
+    // console.log(time)
 		if (isNaN(time)) return "0:00";
 		const minutes = Math.floor(time / 60);
 		const seconds = Math.floor(time % 60);
