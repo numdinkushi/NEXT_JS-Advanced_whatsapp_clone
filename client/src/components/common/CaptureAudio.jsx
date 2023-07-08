@@ -1,4 +1,7 @@
 import { useStateProvider } from "@/context/StateContext";
+import { reducerCases } from "@/context/constants";
+import { ADD_AUDIO_MESSAGE_ROUTE } from "@/utils/ApiRoutes";
+import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import {
 	FaMicrophone,
@@ -11,7 +14,7 @@ import { MdSend } from "react-icons/md";
 import Wavesurfer from "wavesurfer.js";
 
 function CaptureAudio({ hide }) {
-	const [{ userInfo, currentChatUser, socket }] = useStateProvider();
+	const [{ userInfo, currentChatUser, socket }, dispatch] = useStateProvider();
 
 	const [isRecording, setIsRecording] = useState(false);
 	const [recordedAudio, setRecordedAudio] = useState(null);
@@ -68,6 +71,7 @@ function CaptureAudio({ hide }) {
 		setRecordingDuration(0);
 		setCurrentPlayBackTime(0);
 		setTotalDuration(0);
+    setRecordedAudio(null);
 		setIsRecording(true);
 		navigator.mediaDevices
 			.getUserMedia({ audio: true })
@@ -140,10 +144,40 @@ function CaptureAudio({ hide }) {
 		setIsPlaying(false);
 	};
 
-	const sendRecording = async () => {};
+	const sendRecording = async () => {
+    try {
+			const formData = new FormData();
+			formData.append("audio", renderedAudio);
+			const response = await axios.post(ADD_AUDIO_MESSAGE_ROUTE, formData, {
+				headers: {
+					"Content-Type": "multipart/form-data",
+				},
+				params: {
+					from: userInfo?.id,
+					to: currentChatUser?.id,
+				},
+			});
+			if (response.status === 201) {
+				socket.current.emit("send-msg", {
+					to: currentChatUser?.id,
+					from: userInfo?.id,
+					message: response?.data.message,
+				});
+				dispatch({
+					type: reducerCases.ADD_MESSAGE,
+					newMessage: {
+						...response.data.message,
+					},
+					fromSelf: true,
+				});
+			}
+		} catch (error) {
+			console.log(error);
+		}
+  };
 
 	const formatTime = (time) => {
-    console.log(time)
+    // console.log(time)
 		if (isNaN(time)) return "0:00";
 		const minutes = Math.floor(time / 60);
 		const seconds = Math.floor(time % 60);
