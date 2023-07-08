@@ -1,4 +1,7 @@
 import { useStateProvider } from "@/context/StateContext";
+import { reducerCases } from "@/context/constants";
+import { ADD_AUDIO_MESSAGE_ROUTE } from "@/utils/ApiRoutes";
+import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import {
 	FaMicrophone,
@@ -11,7 +14,7 @@ import { MdSend } from "react-icons/md";
 import Wavesurfer from "wavesurfer.js";
 
 function CaptureAudio({ hide }) {
-	const [{ userInfo, currentChatUser, socket }] = useStateProvider();
+	const [{ userInfo, currentChatUser, socket }, dispatch] = useStateProvider();
 
 	const [isRecording, setIsRecording] = useState(false);
 	const [recordedAudio, setRecordedAudio] = useState(null);
@@ -68,6 +71,7 @@ function CaptureAudio({ hide }) {
 		setRecordingDuration(0);
 		setCurrentPlayBackTime(0);
 		setTotalDuration(0);
+    setRecordedAudio(null);
 		setIsRecording(true);
 		navigator.mediaDevices
 			.getUserMedia({ audio: true })
@@ -144,7 +148,7 @@ function CaptureAudio({ hide }) {
     try {
 			const formData = new FormData();
 			formData.append("audio", renderedAudio);
-			const response = await axios.post(ADD_IMAGE_MESSAGE_ROUTE, formData, {
+			const response = await axios.post(ADD_AUDIO_MESSAGE_ROUTE, formData, {
 				headers: {
 					"Content-Type": "multipart/form-data",
 				},
