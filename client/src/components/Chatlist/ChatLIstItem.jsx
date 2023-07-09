@@ -11,6 +11,19 @@ function ChatLIstItem({ data, isContactPage = false }) {
         // if(currentChatUser?.id == data?.id){
           dispatch({type: reducerCases.CHANGE_CURRENT_CHAT_USER, user:{...data}})
           dispatch({type: reducerCases.SET_ALL_CONTACTS})
+          if (!isContactPage) {
+            
+            dispatch({type: reducerCases.CHANGE_CURRENT_CHAT_USER, user: {
+              name: data.name,
+              about: data.about,
+              profilePicture: data.profilePicture,
+              email: data.email,
+              id: userInfo?.id === data.senderId ? data?.receiverId : data.senderId
+            }})
+          }else{
+            dispatch({type: reducerCases.CHANGE_CURRENT_CHAT_USER, user:{...data}})
+            dispatch({type: reducerCases.SET_ALL_CONTACTS})
+          }
         // }
   }
 	return <div className={`flex cursor-pointer items-center hover:bg-background-default-hover`} onClick={handleContactClick}>
