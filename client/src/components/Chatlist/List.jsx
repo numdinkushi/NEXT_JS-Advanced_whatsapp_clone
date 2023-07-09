@@ -6,9 +6,8 @@ import ChatLIstItem from "./ChatLIstItem";
 import axios from "axios";
 
 function List() {
-	const [{ userInfo, userContacts }, dispatch] = useStateProvider();
-
-  console.log(111, userContacts);
+	const [{ userInfo, userContacts, filteredContacts }, dispatch] =
+		useStateProvider();
 
 	useEffect(() => {
 		const getContacts = async () => {
@@ -16,22 +15,24 @@ function List() {
 				const {
 					data: { users, onlineUsers },
 				} = await axios(`${GET_INITIAL_CONTACTS_ROUTE}/${userInfo.id}}`);
-        console.log(222, users)
 				dispatch({ type: reducerCases.SET_ONLINE_USERS, onlineUsers });
-				dispatch({ type: reducerCases.SET_USER_CONTACTS, userContacts:users });
-			} catch (error) {
-        console.log(333, error)
-      }
+				dispatch({ type: reducerCases.SET_USER_CONTACTS, userContacts: users });
+			} catch (error) {}
 		};
 
-		if(userInfo?.id) getContacts();
+		if (userInfo?.id) getContacts();
 	}, [userInfo]);
 
 	return (
 		<div className="bg-search-input-container-background flex-auto overflow-auto max-h-full custom-scrollbar">
-			{userContacts.map((contact) => (
-				<ChatLIstItem data={contact} key={contact.id} />
-			))}
+			{filteredContacts && filteredContacts.length > 0
+				? filteredContacts.map((contact) => (
+						<ChatLIstItem data={contact} key={contact.id} />
+				  ))
+				: userContacts.map((contact) => (
+						<ChatLIstItem data={contact} key={contact.id} />
+				  ))}
+			{}
 		</div>
 	);
 }
