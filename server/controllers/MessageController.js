@@ -128,7 +128,7 @@ export const getInitialContactsWithMessages = async (req, res, next) => {
 	try {
 		const userId = parseInt(req.params.from);
 		const prisma = getPrismaInstance();
-		const user = await prisma.User.findUnique({
+		const user = await prisma.user.findUnique({
 			where: { id: userId },
 			include: {
 				sentMessages: {
@@ -152,30 +152,28 @@ export const getInitialContactsWithMessages = async (req, res, next) => {
 			},
 		});
 		const messages = [...user.sentMessages, ...user.receivedMessages];
-		messages.sort((a, b) => {
-			return b.createdAt.getTime() > a.createdAt.getTime();
-		});
+		messages.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 		const users = new Map();
 		const messageStatusChange = [];
 
 		messages.forEach((msg) => {
 			const isSender = msg.sender === userId;
 			const calculatedId = isSender ? msg.receiverId : msg.senderId;
-			if (msg.messageStatus === "sent") {
+			if (msg.messageStatus === "Sent") {
 				messageStatusChange.push(msg.id);
 			}
 
-			if (!users.get(calculatedId)) {
-				const {
-					id,
-					type,
-					message,
-					messageStatus,
-					createdAt,
-					senderId,
-					receiverId,
-				} = msg;
+			const {
+				id,
+				type,
+				message,
+				messageStatus,
+				createdAt,
+				senderId,
+				receiverId,
+			} = msg;
 
+			if (!users.get(calculatedId)) {
 				let user = {
 					messageId: id,
 					type,
@@ -199,8 +197,7 @@ export const getInitialContactsWithMessages = async (req, res, next) => {
 						totalUnreadMessages: messageStatus !== "read" ? 1 : 0,
 					};
 				}
-				users.set(calculatedId, {...user});
-
+				users.set(calculatedId, { ...user });
 			} else if (messageStatus !== "read" && !isSender) {
 				const user = users.get(calculatedId);
 				users.set(calculatedId, {
@@ -208,10 +205,9 @@ export const getInitialContactsWithMessages = async (req, res, next) => {
 					totalUnreadMessages: user.totalUnreadMessages + 1,
 				});
 			}
-
 		});
 
-		if(messageStatusChange.length > 0){
+		if (messageStatusChange.length > 0) {
 			await prisma.Messages.updateMany({
 				where: {
 					id: { in: messageStatusChange },
@@ -219,10 +215,11 @@ export const getInitialContactsWithMessages = async (req, res, next) => {
 				data: { messageStatus: "delivered" },
 			});
 		}
-	return res.status(200).json({
-		users: Array.from(users.values()),
-		onlineUsers: Array.from(onlineUsers.keys())
-	})
+		
+		return res.status(200).json({
+			users: Array.from(users.values()),
+			onlineUsers: Array.from(onlineUsers.keys()),
+		});
 	} catch (error) {
 		next(error);
 	}
