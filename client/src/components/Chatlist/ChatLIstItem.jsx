@@ -10,9 +10,6 @@ function ChatLIstItem({ data, isContactPage = false }) {
 	const [{ userInfo, currentChatUser }, dispatch] = useStateProvider();
 
 	const handleContactClick = () => {
-		// if(currentChatUser?.id == data?.id){
-		// dispatch({type: reducerCases.CHANGE_CURRENT_CHAT_USER, user:{...data}})
-		// dispatch({type: reducerCases.SET_ALL_CONTACTS})
 		if (!isContactPage) {
 			dispatch({
 				type: reducerCases.CHANGE_CURRENT_CHAT_USER,
@@ -31,7 +28,6 @@ function ChatLIstItem({ data, isContactPage = false }) {
 			});
 			dispatch({ type: reducerCases.SET_ALL_CONTACTS });
 		}
-		// }
 	};
 	return (
 		<div
@@ -66,15 +62,29 @@ function ChatLIstItem({ data, isContactPage = false }) {
 									{data?.senderId === userInfo?.id && (
 										<MessageStatus messageStatus={data?.messageStatus} />
 									)}
-									{data?.type == "text" && <span className="truncate">{data.message}</span>}
-                  {data?.type == "audio" && <span className="flex gap-1 items-center">Audio<FaMicrophone className="text-panel-header-icon"/></span>}
-                  {data?.type == "image" && <span className="flex gap-1 items-center">Photo<FaCamera className="text-panel-header-icon"/></span>}
+									{data?.type == "text" && (
+										<span className="truncate">{data.message}</span>
+									)}
+									{data?.type == "audio" && (
+										<span className="flex gap-1 items-center">
+											Audio
+											<FaMicrophone className="text-panel-header-icon" />
+										</span>
+									)}
+									{data?.type == "image" && (
+										<span className="flex gap-1 items-center">
+											Photo
+											<FaCamera className="text-panel-header-icon" />
+										</span>
+									)}
 								</div>
 							)}
 						</span>
-            {data?.totalUnreadMessages > 0 && <span className="bg-icon-green px-[5px] rounded-full text-sm">
-              {data?.totalUnreadMessages}
-             </span>}
+						{data?.totalUnreadMessages > 0 && (
+							<span className="bg-icon-green px-[5px] rounded-full text-sm">
+								{data?.totalUnreadMessages}
+							</span>
+						)}
 					</div>
 				</div>
 			</div>

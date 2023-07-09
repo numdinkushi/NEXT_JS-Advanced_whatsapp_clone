@@ -1,8 +1,11 @@
+import { useStateProvider } from "@/context/StateContext";
+import { reducerCases } from "@/context/constants";
 import React from "react";
 import { BiSearchAlt2 } from "react-icons/bi";
 import { BsFilter } from "react-icons/bs";
 
 function SearchBar() {
+	const [{contactSearch}, dispatch] = useStateProvider();
 	return (
 		<div className="bg-search-input-container-background flex py-3 px-5 items-center gap-3 h-14">
 			<div className="bg-panel-header-background flex items-center gap-5 px-3 py-1 rounded-lg flex-grow">
@@ -14,6 +17,8 @@ function SearchBar() {
 						type="text"
 						placeholder="search or start a new chat"
 						className="bg-transparent text-sm focus:outline-none text-white w-full"
+						value={contactSearch}
+						onChange={(e) => dispatch({type:reducerCases.SET_CONTACTS_SEARCH, contactSearch: e.target.value})}
 					/>
 				</div>
 			</div>
